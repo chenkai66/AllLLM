@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>智能问答系统</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>智能问答系统</h1>
+        
+        <div class="settings">
+            <h2>系统设置</h2>
+            <label>
+                <input type="checkbox" id="enableKnowledgeUpdate" checked>
+                实时更新知识库
+            </label>
+            <label>
+                <input type="checkbox" id="enableContextAnalysis" checked>
+                启用上下文分析
+            </label>
+            <label>
+                上下文长度限制:
+                <input type="number" id="maxContextLength" value="10000" min="1000" max="20000">
+            </label>
+        </div>
+        
+        <div class="chat-container">
+            <div id="chat-history"></div>
+            <div class="input-area">
+                <input type="text" id="user-input" placeholder="请输入您的问题...">
+                <button id="send-btn">发送</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let conversationId = null;
+        
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        function sendMessage() {
+            const userInput = document.getElementById('user-input').value.trim();
+            if (!userInput) return;
+            
+            // 添加到聊天历史
+            addMessageToHistory('user', userInput);
+            document.getElementById('user-input').value = '';
+            
+            // 获取设置
+            const settings = {
+                enable_knowledge_update: document.getElementById('enableKnowledgeUpdate').checked,
+                enable_context_analysis: document.getElementById('enableContextAnalysis').checked,
+                max_context_length: parseInt(document.getElementById('maxContextLength').value)
+            };
+            
+            // 发送请求
+            fetch('/ask', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    question: userInput,
+                    conversation_id: conversationId,
+                    settings: settings
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                conversationId = data.conversation_id || conversationId;
+                addMessageToHistory('assistant', data.response);
+            });
+        }
+        
+        function addMessageToHistory(role, content) {
+            const historyDiv = document.getElementById('chat-history');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            messageDiv.textContent = content;
+            historyDiv.appendChild(messageDiv);
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>
