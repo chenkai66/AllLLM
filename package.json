@@ -1,0 +1,33 @@
+{
+  "name": "Allllm",
+  "version": "1.0.0",
+  "description": "一个结合各种知识库以及记忆流的本地网页版大模型调用应用",
+  "main": "app.py",
+  "scripts": {
+    "start": "python app.py",
+    "init-knowledge": "python -m chatbot.rag indexing",
+    "test": "python -m pytest"
+  },
+  "keywords": [
+    "llm",
+    "rag",
+    "knowledge-base",
+    "chatbot",
+    "dashscope",
+    "qwen"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "flask": "^3.0.0",
+    "python-dotenv": "^1.0.0",
+    "openai": "^1.12.0",
+    "llama-index": "^0.10.20",
+    "llama-index-llms-dashscope": "^0.1.2",
+    "llama-index-embeddings-dashscope": "^0.1.4",
+    "llama-index-readers-file": "^0.1.33",
+    "llama-index-vector-stores-faiss": "^0.1.2",
+    "faiss-cpu": "^1.8.0",
+    "dashscope": "^1.14.0"
+  }
+}

@@ -1,0 +1,20 @@
+请严格按照以下JSON格式回复：
+
+{
+  "intents": [
+    {
+      "id": 1,
+      "title": "意图方向1的简短标题",
+      "description": "该意图方向的详细描述"
+    },
+    {
+      "id": 2,
+      "title": "意图方向2的简短标题",
+      "description": "该意图方向的详细描述"
+    }
+  ],
+  "need_more_info": {
+    "title": "需要更多信息",
+    "description": "您的问题不够清晰，请提供更多细节"
+  }
+}

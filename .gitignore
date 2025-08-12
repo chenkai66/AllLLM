@@ -1,1 +1,4 @@
 allllm/
+.env
+KEY.json
+key.json

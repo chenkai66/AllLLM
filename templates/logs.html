@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统日志 - 智能问答系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --success-color: #4ade80;
+            --warning-color: #facc15;
+            --error-color: #f87171;
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+            --gray-color: #94a3b8;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .nav-tab {
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-tab.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .nav-tab:hover:not(.active) {
+            background-color: #e2e8f0;
+        }
+
+        .tab-content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-pane {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .tab-pane.active {
+            display: flex;
+        }
+
+        .log-panel-stream {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-title i {
+            color: var(--primary-color);
+        }
+
+        .log-content {
+            flex: 1;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-y: auto;
+            min-height: 200px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .log-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: var(--dark-color);
+        }
+
+        .btn-warning:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: var(--transition);
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: var(--transition);
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .log-actions {
+                flex-wrap: wrap;
+            }
+            
+            .auto-refresh {
+                margin-left: 0;
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-file-alt"></i> 系统日志</h1>
+            <a href="/" class="btn btn-primary"><i class="fas fa-arrow-left"></i> 返回主界面</a>
+        </div>
+        
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="chain">思维链日志</div>
+            <div class="nav-tab" data-tab="knowledge">知识处理日志</div>
+            <div class="nav-tab" data-tab="user">用户分析日志</div>
+            <div class="nav-tab" data-tab="organize">整理日志</div>
+        </div>
+        
+        <div class="tab-content">
+            <div class="tab-pane active" id="chain-tab">
+                <div class="log-panel-stream">
+                    <div class="panel-title">
+                        <i class="fas fa-brain"></i> 思维链日志
+                        <div class="log-actions">
+                            <button class="btn btn-success" id="clear-chain-log"><i class="fas fa-broom"></i> 清空日志</button>
+                            <button class="btn btn-warning" id="save-chain-log"><i class="fas fa-download"></i> 保存日志</button>
+                            <div class="auto-refresh">
+                                <span>自动刷新</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="auto-refresh-chain" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="log-content" id="chain-log-content"></div>
+                </div>
+            </div>
+            
+            <div class="tab-pane" id="knowledge-tab">
+                <div class="log-panel-stream">
+                    <div class="panel-title">
+                        <i class="fas fa-database"></i> 知识处理日志
+                        <div class="log-actions">
+                            <button class="btn btn-success" id="clear-knowledge-log"><i class="fas fa-broom"></i> 清空日志</button>
+                            <button class="btn btn-warning" id="save-knowledge-log"><i class="fas fa-download"></i> 保存日志</button>
+                            <div class="auto-refresh">
+                                <span>自动刷新</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="auto-refresh-knowledge" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="log-content" id="knowledge-log-content"></div>
+                </div>
+            </div>
+            
+            <div class="tab-pane" id="user-tab">
+                <div class="log-panel-stream">
+                    <div class="panel-title">
+                        <i class="fas fa-user-cog"></i> 用户分析日志
+                        <div class="log-actions">
+                            <button class="btn btn-success" id="clear-user-log"><i class="fas fa-broom"></i> 清空日志</button>
+                            <button class="btn btn-warning" id="save-user-log"><i class="fas fa-download"></i> 保存日志</button>
+                            <div class="auto-refresh">
+                                <span>自动刷新</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="auto-refresh-user" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="log-content" id="user-log-content"></div>
+                </div>
+            </div>
+            
+            <div class="tab-pane" id="organize-tab">
+                <div class="log-panel-stream">
+                    <div class="panel-title">
+                        <i class="fas fa-terminal"></i> 整理日志
+                        <div class="log-actions">
+                            <button class="btn btn-success" id="clear-organize-log"><i class="fas fa-broom"></i> 清空日志</button>
+                            <button class="btn btn-warning" id="save-organize-log"><i class="fas fa-download"></i> 保存日志</button>
+                            <div class="auto-refresh">
+                                <span>自动刷新</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="auto-refresh-organize" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="log-content" id="organize-log-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 日志数据存储
+        const logs = {
+            chain: [],
+            knowledge: [],
+            user: [],
+            organize: []
+        };
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 标签页切换
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有活动状态
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                    
+                    // 添加当前活动状态
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // 清空日志按钮事件
+            document.getElementById('clear-chain-log').addEventListener('click', () => clearLog('chain'));
+            document.getElementById('clear-knowledge-log').addEventListener('click', () => clearLog('knowledge'));
+            document.getElementById('clear-user-log').addEventListener('click', () => clearLog('user'));
+            document.getElementById('clear-organize-log').addEventListener('click', () => clearLog('organize'));
+            
+            // 保存日志按钮事件
+            document.getElementById('save-chain-log').addEventListener('click', () => saveLog('chain'));
+            document.getElementById('save-knowledge-log').addEventListener('click', () => saveLog('knowledge'));
+            document.getElementById('save-user-log').addEventListener('click', () => saveLog('user'));
+            document.getElementById('save-organize-log').addEventListener('click', () => saveLog('organize'));
+            
+            // 开始自动刷新日志
+            startAutoRefresh();
+        });
+        
+        // 清空日志
+        function clearLog(type) {
+            if (confirm(`确定要清空${getLogTypeName(type)}吗？`)) {
+                logs[type] = [];
+                updateLogDisplay(type);
+            }
+        }
+        
+        // 保存日志
+        function saveLog(type) {
+            const logContent = logs[type].join('\n');
+            const blob = new Blob([logContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${type}_log_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // 获取日志类型名称
+        function getLogTypeName(type) {
+            const names = {
+                chain: '思维链日志',
+                knowledge: '知识处理日志',
+                user: '用户分析日志',
+                organize: '整理日志'
+            };
+            return names[type] || type;
+        }
+        
+        // 更新日志显示
+        function updateLogDisplay(type) {
+            const logContentElement = document.getElementById(`${type}-log-content`);
+            if (logContentElement) {
+                logContentElement.innerHTML = '';
+                logs[type].forEach(entry => {
+                    const logEntry = document.createElement('div');
+                    logEntry.className = 'log-entry';
+                    logEntry.textContent = entry;
+                    logContentElement.appendChild(logEntry);
+                });
+                logContentElement.scrollTop = logContentElement.scrollHeight;
+            }
+        }
+        
+        // 添加日志条目
+        function addLogEntry(type, message) {
+            const timestamp = new Date().toLocaleString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logs[type].push(logEntry);
+            updateLogDisplay(type);
+        }
+        
+        // 模拟日志数据（实际应用中应该从服务器获取）
+        function simulateLogData() {
+            // 模拟添加一些日志条目
+            if (Math.random() > 0.7) {
+                addLogEntry('chain', '正在分析用户输入...');
+            }
+            
+            if (Math.random() > 0.8) {
+                addLogEntry('knowledge', '从知识库中检索相关信息...');
+            }
+            
+            if (Math.random() > 0.9) {
+                addLogEntry('user', '分析用户偏好和历史交互...');
+            }
+            
+            if (Math.random() > 0.95) {
+                addLogEntry('organize', '开始整理知识库结构...');
+            }
+        }
+        
+        // 开始自动刷新日志
+        function startAutoRefresh() {
+            setInterval(() => {
+                // 模拟日志数据（实际应用中应该从服务器获取）
+                simulateLogData();
+                
+                // 检查是否需要自动刷新各类型日志
+                if (document.getElementById('auto-refresh-chain').checked) {
+                    // 这里应该从服务器获取最新的思维链日志
+                }
+                
+                if (document.getElementById('auto-refresh-knowledge').checked) {
+                    // 这里应该从服务器获取最新的知识处理日志
+                }
+                
+                if (document.getElementById('auto-refresh-user').checked) {
+                    // 这里应该从服务器获取最新的用户分析日志
+                }
+                
+                if (document.getElementById('auto-refresh-organize').checked) {
+                    // 这里应该从服务器获取最新的整理日志
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

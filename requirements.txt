@@ -29,8 +29,5 @@ ipywidgets==8.1.7
 modelscope
 flask==3.0.2
 llama-index==0.10.20
-openai==1.12.0
 python-dotenv==1.0.0
-dashscope==1.14.0
-pandas==2.1.4
 python-dateutil==2.8.2
